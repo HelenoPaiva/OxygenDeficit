@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oxygen Deficit Calculator</title>
+  <style>
+    :root{
+      --bg:#030b1b;
+      --bg2:#06122a;
+      --panel:#08142e;
+      --panel-2:#091831;
+      --panel-3:#0d1d39;
+      --line:#1b3158;
+      --line-soft:#142748;
+      --text:#eef4ff;
+      --muted:#94a8c9;
+      --blue:#4b8cff;
+      --blue-2:#2f73ee;
+      --green:#19d38a;
+      --green-soft:rgba(25,211,138,.12);
+      --amber:#ffbf47;
+      --amber-soft:rgba(255,191,71,.12);
+      --red:#ff6b7a;
+      --red-soft:rgba(255,107,122,.11);
+      --shadow:0 18px 40px rgba(0,0,0,.28);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(75,140,255,.09), transparent 22%),
+        radial-gradient(circle at top right, rgba(75,140,255,.07), transparent 20%),
+        linear-gradient(180deg, #020817 0%, #041126 100%);
+      min-height:100vh;
+    }
+
+    .topbar{
+      border-bottom:1px solid var(--line-soft);
+      background:rgba(2,8,23,.86);
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar-inner{
+      max-width:1180px;
+      margin:0 auto;
+      padding:14px 18px;
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+    }
+
+    .title{
+      font-size:1.95rem;
+      font-weight:800;
+      letter-spacing:-.03em;
+      margin:0 0 4px;
+    }
+
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:.96rem;
+      line-height:1.5;
+    }
+
+    .lang{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:4px;
+    }
+
+    .lang-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:4px;
+    }
+
+    .lang-btn{
+      border:none;
+      background:transparent;
+      color:var(--muted);
+      padding:8px 12px;
+      border-radius:9px;
+      font-size:.9rem;
+      font-weight:700;
+    }
+
+    .lang-btn.active{
+      background:linear-gradient(180deg, var(--blue), var(--blue-2));
+      color:#fff;
+      box-shadow:0 8px 18px rgba(47,115,238,.25);
+    }
+
+    .shell{
+      max-width:1180px;
+      margin:0 auto;
+      padding:22px 18px 34px;
+    }
+
+    .alert{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      background:linear-gradient(180deg, rgba(43,20,46,.58), rgba(31,16,44,.52));
+      border:1px solid rgba(214,49,83,.55);
+      border-radius:18px;
+      padding:16px 18px;
+      color:#ffd8de;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .alert-icon{
+      color:var(--red);
+      font-size:1rem;
+      line-height:1.4;
+      margin-top:1px;
+    }
+
+    .alert strong{display:block;margin-bottom:6px}
+    .alert ul{
+      margin:0;
+      padding-left:18px;
+      color:#e9c6cc;
+      line-height:1.6;
+      font-size:.95rem;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .stack{
+      display:grid;
+      gap:22px;
+    }
+
+    .panel{
+      background:linear-gradient(180deg, rgba(8,20,46,.94), rgba(6,17,38,.98));
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel-header{
+      padding:18px 20px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .panel h2{
+      margin:0;
+      font-size:1.2rem;
+      letter-spacing:-.02em;
+    }
+
+    .panel-head-note{
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.45;
+      margin:4px 0 0;
+    }
+
+    .dot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:var(--green);
+      box-shadow:0 0 16px rgba(25,211,138,.55);
+      flex:0 0 auto;
+    }
+
+    .panel-body{
+      padding:0 20px 20px;
+    }
+
+    .fields{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px 16px;
+    }
+
+    .field{
+      display:grid;
+      gap:7px;
+    }
+
+    .field.full{grid-column:1 / -1}
+
+    label{
+      color:#dbe7ff;
+      font-size:.93rem;
+      font-weight:700;
+      letter-spacing:-.01em;
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:.78rem;
+      line-height:1.45;
+      margin-top:-2px;
+    }
+
+    input{
+      width:100%;
+      background:#030d22;
+      border:1px solid var(--line-soft);
+      color:var(--text);
+      border-radius:12px;
+      padding:13px 14px;
+      font-size:1rem;
+      outline:none;
+      transition:.16s ease;
+      appearance:textfield;
+    }
+
+    input:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 4px rgba(75,140,255,.14);
+    }
+
+    .mini-cards{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .mini{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:15px 15px 14px;
+      min-height:106px;
+    }
+
+    .mini-k{
+      color:var(--muted);
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin-bottom:8px;
+    }
+
+    .mini-v{
+      font-size:1.4rem;
+      font-weight:800;
+      letter-spacing:-.03em;
+      margin-bottom:4px;
+    }
+
+    .mini-sub{
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.4;
+    }
+
+    .controls{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    button{
+      border:none;
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:.94rem;
+      font-weight:800;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+
+    button:hover{transform:translateY(-1px)}
+    .primary{
+      background:linear-gradient(180deg, var(--blue), var(--blue-2));
+      color:#fff;
+      box-shadow:0 12px 20px rgba(47,115,238,.22);
+    }
+    .secondary{
+      background:#0b1d3d;
+      color:#dbe7ff;
+      border:1px solid var(--line);
+    }
+
+    .text-panel{
+      padding:18px 20px 20px;
+    }
+
+    .copy-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .copy-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(25,211,138,.1);
+      color:#84f0c2;
+      border:1px solid rgba(25,211,138,.45);
+      padding:9px 12px;
+      border-radius:12px;
+      font-size:.92rem;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .copy-btn:hover{transform:translateY(-1px)}
+
+    .caption{
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.5;
+      margin:0 0 14px;
+    }
+
+    .textbox{
+      background:#040d20;
+      border:1px solid var(--line-soft);
+      border-radius:16px;
+      padding:16px 16px 18px;
+      color:#edf4ff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.96rem;
+      line-height:1.55;
+      white-space:pre-wrap;
+      min-height:560px;
+    }
+
+    .formula-box{
+      margin-top:16px;
+      display:grid;
+      gap:10px;
+    }
+
+    .eq{
+      background:#07152f;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 13px;
+      color:#dbe7ff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.86rem;
+      line-height:1.5;
+      overflow:auto;
+    }
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:.78rem;
+      font-weight:800;
+      border:1px solid transparent;
+    }
+
+    .good{background:var(--green-soft); color:#86f1c2; border-color:rgba(25,211,138,.28)}
+    .warn{background:var(--amber-soft); color:#ffd98b; border-color:rgba(255,191,71,.28)}
+    .bad{background:var(--red-soft); color:#ffb8c0; border-color:rgba(255,107,122,.28)}
+    .info{background:rgba(75,140,255,.12); color:#afcbff; border-color:rgba(75,140,255,.28)}
+
+    @media (max-width: 980px){
+      .grid, .fields, .mini-cards, .controls{grid-template-columns:1fr}
+      .shell{padding:16px 12px 26px}
+      .topbar-inner{padding:14px 12px}
+      .textbox{min-height:420px}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <h1 class="title">Oxygen Deficit Calculator</h1>
+        <p class="subtitle">Teaching-focused local tool to compare converted expired O₂ pressure with estimated arterial oxygen and the classical A–a gradient.</p>
+      </div>
+      <div class="lang">
+        <div class="lang-pill">
+          <button class="lang-btn active" type="button">EN</button>
+          <button class="lang-btn" type="button" aria-disabled="true">PT</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="alert">
+      <div class="alert-icon">⚠️</div>
+      <div>
+        <strong>Review these teaching assumptions:</strong>
+        <ul>
+          <li>Expired O₂ on the machine is entered as vol% and converted into partial pressure.</li>
+          <li>PETCO₂ is used as a practical surrogate for PaCO₂.</li>
+          <li>SpO₂ is converted to estimated PaO₂ using a simplified dissociation-curve model.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="grid">
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Machine Inputs</h2>
+              <p class="panel-head-note">Maintain the same workflow, only redesigned to match the previous project look.</p>
+            </div>
+            <div class="dot"></div>
+          </div>
+          <div class="panel-body">
+            <div class="fields">
+              <div class="field">
+                <label for="spo2">SpO₂ (%)</label>
+                <input id="spo2" type="number" min="50" max="100" step="0.1" value="95">
+                <div class="hint">Estimated PaO₂ will be derived from this value.</div>
+              </div>
+
+              <div class="field">
+                <label for="petco2">End-tidal CO₂ (mmHg)</label>
+                <input id="petco2" type="number" min="10" max="80" step="0.1" value="40">
+                <div class="hint">Teaching surrogate for PaCO₂ in the alveolar gas equation.</div>
+              </div>
+
+              <div class="field">
+                <label for="fio2vol">Inspired O₂ (vol%)</label>
+                <input id="fio2vol" type="number" min="10" max="100" step="0.1" value="21.0">
+                <div class="hint">Read directly from the anesthesia machine display.</div>
+              </div>
+
+              <div class="field">
+                <label for="feo2vol">Expired O₂ (vol%)</label>
+                <input id="feo2vol" type="number" min="5" max="100" step="0.1" value="14.0">
+                <div class="hint">Converted into expired PO₂ using pressure.</div>
+              </div>
+
+              <div class="field">
+                <label for="pb">Vm / Barometric pressure (mmHg)</label>
+                <input id="pb" type="number" min="400" max="800" step="1" value="760">
+                <div class="hint">Use the pressure value you want for the conversion step.</div>
+              </div>
+
+              <div class="field">
+                <label for="rq">Respiratory quotient, R</label>
+                <input id="rq" type="number" min="0.5" max="1.2" step="0.01" value="0.8">
+                <div class="hint">Usual teaching default: 0.8.</div>
+              </div>
+            </div>
+
+            <div class="controls">
+              <button class="primary" id="normalCase" type="button">Load near-normal case</button>
+              <button class="secondary" id="vqCase" type="button">Load gas-exchange case</button>
+            </div>
+
+            <div class="mini-cards">
+              <div class="mini">
+                <div class="mini-k">Estimated PaO₂</div>
+                <div class="mini-v" id="miniPao2">79.9</div>
+                <div class="mini-sub">mmHg from SpO₂</div>
+              </div>
+              <div class="mini">
+                <div class="mini-k">Expired PO₂</div>
+                <div class="mini-v" id="miniExpPo2">99.8</div>
+                <div class="mini-sub">mmHg from expired O₂ vol%</div>
+              </div>
+              <div class="mini">
+                <div class="mini-k">PAO₂</div>
+                <div class="mini-v" id="miniPAO2">99.7</div>
+                <div class="mini-sub">Classical alveolar equation</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Teaching Interpretation</h2>
+              <p class="panel-head-note">Same calculation logic, dark dashboard redesign only.</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="formula-box">
+              <div class="eq" id="eq1">Expired PO₂ ≈ 0.140 × (760 − 47) = 99.8 mmHg</div>
+              <div class="eq" id="eq2">Oxygen deficit = 99.8 − 79.9 = 19.9 mmHg</div>
+              <div class="eq" id="eq3">PAO₂ = 0.210 × (760 − 47) − 40 / 0.80 = 99.7 mmHg</div>
+              <div class="eq" id="eq4">A–a gradient = 99.7 − 79.9 = 19.8 mmHg</div>
+            </div>
+            <div class="badges">
+              <span class="badge info" id="expPo2Badge">Converted expired O₂</span>
+              <span class="badge warn" id="odBadge">Oxygen deficit</span>
+              <span class="badge warn" id="aaBadge">A–a gradient</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="text-panel">
+          <div class="copy-row">
+            <div>
+              <h2 style="margin:0;font-size:1.2rem;letter-spacing:-.02em;">Generated Teaching Text</h2>
+            </div>
+            <button class="copy-btn" id="copyBtn" type="button">⧉ Copy</button>
+          </div>
+          <p class="caption">The text below updates automatically as you edit the inputs.</p>
+          <div class="textbox" id="outputText"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const PH2O = 47;
+
+    const els = {
+      spo2: document.getElementById('spo2'),
+      fio2vol: document.getElementById('fio2vol'),
+      feo2vol: document.getElementById('feo2vol'),
+      petco2: document.getElementById('petco2'),
+      pb: document.getElementById('pb'),
+      rq: document.getElementById('rq'),
+      miniPao2: document.getElementById('miniPao2'),
+      miniExpPo2: document.getElementById('miniExpPo2'),
+      miniPAO2: document.getElementById('miniPAO2'),
+      eq1: document.getElementById('eq1'),
+      eq2: document.getElementById('eq2'),
+      eq3: document.getElementById('eq3'),
+      eq4: document.getElementById('eq4'),
+      outputText: document.getElementById('outputText'),
+      normalCase: document.getElementById('normalCase'),
+      vqCase: document.getElementById('vqCase'),
+      copyBtn: document.getElementById('copyBtn'),
+      expPo2Badge: document.getElementById('expPo2Badge'),
+      odBadge: document.getElementById('odBadge'),
+      aaBadge: document.getElementById('aaBadge')
+    };
+
+    function clamp(v, min, max){
+      return Math.min(max, Math.max(min, v));
+    }
+
+    function fmt(v, d=1){
+      return Number.isFinite(v) ? v.toFixed(d) : '—';
+    }
+
+    function estimatePaO2FromSpO2(spo2Percent){
+      const s = clamp(spo2Percent / 100, 0.50, 0.999);
+      const P50 = 26.8;
+      const n = 2.7;
+      return P50 * Math.pow(s / (1 - s), 1 / n);
+    }
+
+    function classifyGap(value){
+      if (value < 10) return {cls:'good', label:'Near-normal'};
+      if (value < 25) return {cls:'warn', label:'Mildly widened'};
+      if (value < 40) return {cls:'warn', label:'Moderately elevated'};
+      return {cls:'bad', label:'Markedly elevated'};
+    }
+
+    function setBadge(node, state){
+      node.className = 'badge ' + state.cls;
+      node.textContent = state.label;
+    }
+
+    function buildInterpretation(od, aa, expPO2, PAO2, pao2Est){
+      if (od < 10 && aa < 15){
+        return {
+          main: 'Converted expired-side oxygen pressure and estimated arterial oxygen remain relatively close. In teaching terms, this pattern fits near-normal gas exchange or only minimal impairment.',
+          note: 'Both oxygen deficit and A–a gradient stay small, so the gap between alveolar-side oxygen and arterial oxygen is limited.'
+        };
+      }
+      if (Math.abs(od - aa) <= 5){
+        return {
+          main: 'The oxygen deficit and A–a gradient are numerically similar here. This is the main teaching point: oxygen deficit can behave like a practical noninvasive surrogate.',
+          note: 'Even when they look similar, remember that oxygen deficit comes from converted expired O₂ pressure, while the A–a gradient comes from calculated PAO₂.'
+        };
+      }
+      if (od > aa + 8){
+        return {
+          main: 'The oxygen deficit is larger than the A–a gradient. That teaches that converted expired O₂ pressure and calculated alveolar oxygen are related, but not interchangeable.',
+          note: 'This discrepancy is educationally useful because it shows why a surrogate should not be mistaken for the classical physiologic variable.'
+        };
+      }
+      return {
+        main: 'Arterial oxygen is lagging behind alveolar-side oxygen values, so both comparisons widen. In a teaching setting, that supports impaired gas exchange.',
+        note: 'The central visual lesson remains the same: more separation between alveolar-side oxygen and arterial oxygen means a larger physiologic gap.'
+      };
+    }
+
+    function compute(){
+      const spo2 = parseFloat(els.spo2.value);
+      const fio2vol = parseFloat(els.fio2vol.value);
+      const feo2vol = parseFloat(els.feo2vol.value);
+      const petco2 = parseFloat(els.petco2.value);
+      const pb = parseFloat(els.pb.value);
+      const rq = parseFloat(els.rq.value);
+
+      const fio2 = fio2vol / 100;
+      const feo2 = feo2vol / 100;
+
+      const pao2Est = estimatePaO2FromSpO2(spo2);
+      const expiredPO2 = feo2 * (pb - PH2O);
+      const PAO2 = fio2 * (pb - PH2O) - (petco2 / rq);
+      const oxygenDeficit = expiredPO2 - pao2Est;
+      const aaGradient = PAO2 - pao2Est;
+
+      const odState = classifyGap(oxygenDeficit);
+      const aaState = classifyGap(aaGradient);
+      const interp = buildInterpretation(oxygenDeficit, aaGradient, expiredPO2, PAO2, pao2Est);
+
+      els.miniPao2.textContent = fmt(pao2Est);
+      els.miniExpPo2.textContent = fmt(expiredPO2);
+      els.miniPAO2.textContent = fmt(PAO2);
+
+      els.eq1.textContent = `Expired PO₂ ≈ ${fmt(feo2,3)} × (${fmt(pb,0)} − 47) = ${fmt(expiredPO2)} mmHg`;
+      els.eq2.textContent = `Oxygen deficit = ${fmt(expiredPO2)} − ${fmt(pao2Est)} = ${fmt(oxygenDeficit)} mmHg`;
+      els.eq3.textContent = `PAO₂ = ${fmt(fio2,3)} × (${fmt(pb,0)} − 47) − ${fmt(petco2)} / ${fmt(rq,2)} = ${fmt(PAO2)} mmHg`;
+      els.eq4.textContent = `A–a gradient = ${fmt(PAO2)} − ${fmt(pao2Est)} = ${fmt(aaGradient)} mmHg`;
+
+      els.expPo2Badge.textContent = `Expired PO₂ ${fmt(expiredPO2)} mmHg`;
+      setBadge(els.odBadge, odState);
+      setBadge(els.aaBadge, aaState);
+
+      const text = [
+        `Machine-based teaching calculation using inspired and expired O₂ in vol%.`,
+        ``,
+        `SpO₂: ${fmt(spo2)}%`,
+        `Inspired O₂: ${fmt(fio2vol)} vol%`,
+        `Expired O₂: ${fmt(feo2vol)} vol%`,
+        `PETCO₂: ${fmt(petco2)} mmHg`,
+        `Pressure input: ${fmt(pb,0)} mmHg`,
+        `Respiratory quotient (R): ${fmt(rq,2)}`,
+        ``,
+        `Estimated PaO₂ from SpO₂: ${fmt(pao2Est)} mmHg.`,
+        `Expired PO₂ from vol% conversion: ${fmt(expiredPO2)} mmHg.`,
+        `Calculated PAO₂: ${fmt(PAO2)} mmHg.`,
+        ``,
+        `Oxygen deficit: ${fmt(oxygenDeficit)} mmHg (${odState.label}).`,
+        `A–a gradient: ${fmt(aaGradient)} mmHg (${aaState.label}).`,
+        ``,
+        `${interp.main}`,
+        `${interp.note}`,
+        ``,
+        `Equations used:`,
+        `Expired PO₂ ≈ (expired O₂ vol% / 100) × (PB − 47)`,
+        `PAO₂ = FiO₂ × (PB − 47) − PETCO₂ / R`,
+        `Oxygen deficit = expired PO₂ − estimated PaO₂`,
+        `A–a gradient = PAO₂ − estimated PaO₂`,
+        ``,
+        `Teaching caveat: this is a physiology teaching tool and not a validated bedside decision system.`
+      ].join('\n');
+
+      els.outputText.textContent = text;
+    }
+
+    ['spo2','fio2vol','feo2vol','petco2','pb','rq'].forEach(id => {
+      els[id].addEventListener('input', compute);
+    });
+
+    els.normalCase.addEventListener('click', () => {
+      els.spo2.value = 98;
+      els.fio2vol.value = 21.0;
+      els.feo2vol.value = 15.0;
+      els.petco2.value = 40;
+      els.pb.value = 760;
+      els.rq.value = 0.8;
+      compute();
+    });
+
+    els.vqCase.addEventListener('click', () => {
+      els.spo2.value = 90;
+      els.fio2vol.value = 35.0;
+      els.feo2vol.value = 22.0;
+      els.petco2.value = 37;
+      els.pb.value = 760;
+      els.rq.value = 0.8;
+      compute();
+    });
+
+    els.copyBtn.addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(els.outputText.textContent);
+        const old = els.copyBtn.textContent;
+        els.copyBtn.textContent = '✓ Copied';
+        setTimeout(() => els.copyBtn.textContent = old, 1200);
+      } catch (e){
+        els.copyBtn.textContent = 'Copy failed';
+        setTimeout(() => els.copyBtn.textContent = '⧉ Copy', 1200);
+      }
+    });
+
+    compute();
+  </script>
+</body>
+</html>
